@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <title>Cyberpunk Game UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- ===================== -->
+    <!-- Cyberpunk Title Bar   -->
+    <!-- ===================== -->
+    <header class="cyber-header">
+        <div class="title">CYBERPUNK GAME SYSTEM</div>
+        <div class="subtitle">Redis Powered Multiplayer Backend</div>
+    </header>
+
+
+    <!-- ===================== -->
+    <!-- Login / Register Page -->
+    <!-- ===================== -->
+    <section id="page-auth" class="page active">
+
+        <div class="auth-container neon-panel">
+
+            <h2 class="cyber-title">玩家登入 / 註冊</h2>
+
+            <div class="input-group">
+                <label>使用者名稱（可中文）</label>
+                <input id="auth-username" type="text" />
+            </div>
+
+            <div class="input-group">
+                <label>密碼</label>
+                <input id="auth-password" type="password" />
+            </div>
+
+            <div class="input-group">
+                <label>確認密碼（註冊用）</label>
+                <input id="auth-password2" type="password" />
+            </div>
+
+            <div class="btn-row">
+                <button class="cyber-btn" onclick="registerUser()">註冊</button>
+                <button class="cyber-btn" onclick="loginUser()">登入</button>
+            </div>
+
+            <div id="auth-message" class="message"></div>
+        </div>
+    </section>
+
+
+
+    <!-- ===================== -->
+    <!-- Player Dashboard Page -->
+    <!-- ===================== -->
+    <section id="page-dashboard" class="page">
+
+        <div class="dash-container">
+
+            <!-- 左側資訊欄 -->
+            <aside class="sidebar neon-panel">
+
+                <h2 class="cyber-title">玩家資訊</h2>
+
+                <div class="info-row">
+                    <label>使用者：</label>
+                    <span id="player-username">-</span>
+                </div>
+
+                <div class="info-row">
+                    <label>金幣：</label>
+                    <span id="player-gold">0</span>
+                </div>
+
+                <div class="info-row">
+                    <label>等級：</label>
+                    <span id="player-level">1</span>
+                </div>
+
+                <div class="info-row">
+                    <label>經驗：</label>
+                    <span id="player-exp">0</span>
+                </div>
+
+                <button class="cyber-btn wide-btn" onclick="openSection('click')">點擊賺金幣</button>
+                <button class="cyber-btn wide-btn" onclick="openSection('shop')">商店</button>
+                <button class="cyber-btn wide-btn" onclick="openSection('inventory')">背包</button>
+                <button class="cyber-btn wide-btn" onclick="openSection('auction')">拍賣場</button>
+
+                <button class="cyber-btn danger-btn wide-btn" onclick="logoutUser()">登出</button>
+            </aside>
+
+
+
+            <!-- 主內容區 -->
+            <main class="main-panel">
+
+                <!-- 點擊賺金幣 -->
+                <div id="section-click" class="panel-section active neon-panel">
+                    <h2 class="cyber-title">點擊賺金幣</h2>
+                    <button id="click-btn" class="click-btn" onclick="clickGold()">點我</button>
+
+                    <div class="info-area">
+                        <p>Combo：<span id="combo-value">1</span></p>
+                        <p>Critical：<span id="critical-value">-</span></p>
+                        <p>總點擊：<span id="total-clicks-value">0</span></p>
+                    </div>
+                </div>
+
+
+
+                <!-- 商店 -->
+                <div id="section-shop" class="panel-section neon-panel">
+                    <h2 class="cyber-title">商店</h2>
+
+                    <div id="shop-items" class="list-grid"></div>
+                </div>
+
+
+
+                <!-- 背包 -->
+                <div id="section-inventory" class="panel-section neon-panel">
+                    <h2 class="cyber-title">背包</h2>
+
+                    <div id="inventory-items" class="list-grid"></div>
+                </div>
+
+
+
+                <!-- 拍賣場 -->
+                <div id="section-auction" class="panel-section neon-panel">
+                    <h2 class="cyber-title">拍賣場</h2>
+
+                    <div class="btn-row">
+                        <button class="cyber-btn" onclick="loadAuctionList()">刷新列表</button>
+                        <button class="cyber-btn" onclick="openAuctionCreate()">上架物品</button>
+                    </div>
+
+                    <div id="auction-list" class="list-grid"></div>
+                </div>
+
+            </main>
+        </div>
+    </section>
+
+
+
+
+    <!-- ===================== -->
+    <!-- Modal （上架拍賣 / 購買等） -->
+    <!-- ===================== -->
+    <div id="modal" class="modal">
+        <div class="modal-content neon-panel">
+            <span class="modal-close" onclick="closeModal()">✕</span>
+            <div id="modal-body">內容載入中...</div>
+        </div>
+    </div>
+
+
+    <!-- JS -->
+    <script src="app.js"></script>
+
+</body>
+</html>
