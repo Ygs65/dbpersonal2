@@ -1,99 +1,759 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>GM Console</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <title>Cyberpunk Admin Console</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
 </head>
-<body class="admin-body">
-  <div class="bg">
-    <div class="bg-noise"></div>
-    <div class="bg-fog"></div>
-    <div class="bg-grid"></div>
-  </div>
 
-  <header class="topbar topbar--admin">
-    <div class="topbar__left">
-      <div class="avatar avatar--gm"></div>
-      <div class="who">
-        <div class="who__name">GM / ADMIN CONSOLE</div>
-        <div class="who__sub">監控 • 管理 • 稽核</div>
-      </div>
-    </div>
-    <div class="topbar__right">
-      <button class="btn btn--ghost" id="btn-ad-refresh">刷新</button>
-      <a class="btn btn--ghost" href="./index.html">回玩家端</a>
-    </div>
-  </header>
+<body>
 
-  <main class="admin">
-    <section class="card card--glass admin-login">
-      <h2>登入</h2>
-      <p class="hint">使用後端 /admin/login 取得 Token（支援 admin / root）。</p>
-      <div class="row row--tight">
-        <label class="field field--inline">
-          <span>管理密碼</span>
-          <input id="ad-pass" type="password" placeholder="ADMIN_PASSWORD 或 ROOT_PASSWORD"/>
-        </label>
-        <button class="btn btn--primary" id="btn-ad-login">登入</button>
-      </div>
-      <div class="hint" id="ad-msg"></div>
+    <!-- ===================== -->
+    <!-- Header -->
+    <!-- ===================== -->
+    <header class="cyber-header">
+        <div class="title">CYBERPUNK ADMIN CONSOLE</div>
+        <div class="subtitle">Root Access • Redis Game Backend</div>
+    </header>
+
+    <!-- ===================== -->
+    <!-- Admin Login Page -->
+    <!-- ===================== -->
+    <section id="page-admin-auth" class="page active">
+        <div class="auth-container neon-panel">
+            <h2 class="cyber-title">後台登入</h2>
+
+            <div class="input-group">
+                <label>後台密碼（ADMIN_PASSWORD）</label>
+                <input id="admin-password" type="password" />
+            </div>
+
+            <div class="btn-row">
+                <button class="cyber-btn" onclick="adminLogin()">登入</button>
+            </div>
+
+            <div id="admin-auth-message" class="message"></div>
+        </div>
     </section>
 
-    <section class="grid admin-grid">
-      <section class="card card--glass">
-        <h3>玩家清單</h3>
-        <div class="toolbar">
-          <input id="ad-player-filter" placeholder="搜尋玩家"/>
-          <button class="btn btn--ghost" id="btn-ad-players">載入</button>
-        </div>
-        <div class="list" id="ad-players"></div>
-      </section>
 
-      <section class="card card--glass">
-        <h3>公告</h3>
-        <div class="row row--tight">
-          <label class="field field--inline">
-            <span>內容</span>
-            <input id="ad-announce" placeholder="輸入公告訊息"/>
-          </label>
-          <button class="btn btn--primary" id="btn-ad-announce-add">發布</button>
-        </div>
-        <div class="toolbar">
-          <button class="btn btn--ghost" id="btn-ad-announce-list">列表</button>
-          <button class="btn btn--ghost" id="btn-ad-announce-clear">清空</button>
-        </div>
-        <div class="list" id="ad-announce-list"></div>
-      </section>
+    <!-- ===================== -->
+    <!-- Admin Dashboard Page -->
+    <!-- ===================== -->
+    <section id="page-admin-dashboard" class="page">
+        <div class="dash-container">
 
-      <section class="card card--glass">
-        <h3>稽核：行為紀錄</h3>
-        <div class="toolbar">
-          <input id="ad-log-action" placeholder="action 篩選（可空）"/>
-          <button class="btn btn--ghost" id="btn-ad-logs">載入</button>
-        </div>
-        <div class="log" id="ad-logs"></div>
-      </section>
+            <!-- Sidebar -->
+            <aside class="sidebar neon-panel">
+                <h2 class="cyber-title">管理功能</h2>
 
-      <section class="card card--glass">
-        <h3>稽核：戰鬥紀錄</h3>
-        <div class="toolbar">
-          <button class="btn btn--ghost" id="btn-ad-battles">載入</button>
-        </div>
-        <div class="log" id="ad-battles"></div>
-      </section>
+                <div class="info-row">
+                    <label>Admin 狀態：</label>
+                    <span id="admin-status">未登入</span>
+                </div>
 
-      <section class="card card--glass">
-        <h3>拍賣成交</h3>
-        <div class="toolbar">
-          <button class="btn btn--ghost" id="btn-ad-auction-sold">載入</button>
+                <button class="cyber-btn wide-btn" onclick="adminOpenSection('players')">
+                    玩家管理
+                </button>
+                <button class="cyber-btn wide-btn" onclick="adminOpenSection('auctions')">
+                    拍賣管理
+                </button>
+                <button class="cyber-btn wide-btn" onclick="adminOpenSection('logs')">
+                    行為 / 出價 / 成交紀錄
+                </button>
+                <button class="cyber-btn wide-btn" onclick="adminOpenSection('announcements')">
+                    公告管理
+                </button>
+
+                <button class="cyber-btn danger-btn wide-btn" onclick="adminLogout()">
+                    登出 Admin
+                </button>
+            </aside>
+
+
+            <!-- Main Panel -->
+            <main class="main-panel">
+
+                <!-- 玩家管理 -->
+                <div id="admin-section-players" class="panel-section active neon-panel">
+                    <h2 class="cyber-title">玩家管理</h2>
+
+                    <div class="btn-row" style="margin-bottom:8px;">
+                        <button class="cyber-btn" onclick="loadPlayers()">刷新玩家列表</button>
+                        <button class="cyber-btn" onclick="loadOnlinePlayers()">查看線上玩家</button>
+                    </div>
+
+                    <div style="font-size:13px; margin-bottom:6px;">
+                        <strong>金幣調整：</strong>輸入「調整金額」，可為正或負，會直接變更為「當前金幣 + 調整值」，不會低於 0。<br>
+                        <strong>背包調整：</strong>輸入 item_id 和 調整數量（正加負減）。
+                    </div>
+
+                    <div id="admin-online-list" class="message" style="margin-bottom:8px;"></div>
+
+                    <div id="admin-players-table" style="max-height:360px; overflow:auto; font-size:12px;">
+                        <!-- 動態產生 -->
+                    </div>
+                </div>
+
+
+
+                <!-- 拍賣管理 -->
+                <div id="admin-section-auctions" class="panel-section neon-panel">
+                    <h2 class="cyber-title">拍賣管理</h2>
+
+                    <div class="btn-row" style="margin-bottom:8px;">
+                        <button class="cyber-btn" onclick="loadAllAuctions()">刷新所有拍賣</button>
+                    </div>
+
+                    <div style="font-size:13px; margin-bottom:6px;">
+                        使用「刪除」會將拍賣物品退回賣家背包並刪除拍賣紀錄。
+                    </div>
+
+                    <div id="admin-auctions-table" style="max-height:380px; overflow:auto; font-size:12px;">
+                        <!-- 動態產生 -->
+                    </div>
+                </div>
+
+
+
+                <!-- 紀錄管理 -->
+                <div id="admin-section-logs" class="panel-section neon-panel">
+                    <h2 class="cyber-title">行為 / 出價 / 成交紀錄</h2>
+
+                    <div class="btn-row" style="margin-bottom:8px;">
+                        <button class="cyber-btn" onclick="loadActionLogs()">行為紀錄</button>
+                        <button class="cyber-btn" onclick="loadBidLogs()">出價紀錄</button>
+                        <button class="cyber-btn" onclick="loadSoldLogs()">成交紀錄</button>
+                    </div>
+
+                    <div id="admin-logs-area" style="max-height:420px; overflow:auto; font-size:11px; white-space:pre-wrap;">
+                        <!-- 動態產生 -->
+                    </div>
+                </div>
+
+
+
+                <!-- 公告管理 -->
+                <div id="admin-section-announcements" class="panel-section neon-panel">
+                    <h2 class="cyber-title">公告管理</h2>
+
+                    <div class="input-group">
+                        <label>新增公告內容</label>
+                        <input id="announce-input" type="text" />
+                    </div>
+
+                    <div class="btn-row" style="margin-bottom:8px;">
+                        <button class="cyber-btn" onclick="addAnnouncement()">新增公告</button>
+                        <button class="cyber-btn" onclick="loadAnnouncements()">刷新公告列表</button>
+                        <button class="cyber-btn danger-btn" onclick="clearAnnouncements()">清除全部公告</button>
+                    </div>
+
+                    <div id="admin-announce-msg" class="message"></div>
+
+                    <div id="admin-announce-list" style="max-height:360px; overflow:auto; font-size:12px;">
+                        <!-- 動態產生 -->
+                    </div>
+                </div>
+
+            </main>
         </div>
-        <div class="log" id="ad-auction-sold"></div>
-      </section>
     </section>
-  </main>
 
-  <script src="admin.js"></script>
+
+
+    <!-- ===================== -->
+    <!-- Admin JS -->
+    <!-- ===================== -->
+    <script>
+        // ===============================
+        // Global Admin State
+        // ===============================
+        let adminToken = null;
+
+        function $(id) {
+            return document.getElementById(id);
+        }
+
+        function adminShowPage(pageId) {
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            const page = $(pageId);
+            if (page) page.classList.add("active");
+        }
+
+        function adminOpenSection(name) {
+            document.querySelectorAll(".panel-section").forEach(sec => sec.classList.remove("active"));
+            const sec = $("admin-section-" + name);
+            if (sec) sec.classList.add("active");
+        }
+
+        function setText(id, v) {
+            const el = $(id);
+            if (el) el.textContent = v;
+        }
+
+        function showAdminMsg(id, msg, isError = true) {
+            const el = $(id);
+            if (!el) return;
+            el.textContent = msg || "";
+            el.style.color = isError ? "#ff99bb" : "#9fffb2";
+        }
+
+        // ===============================
+        // Admin API Helper
+        // ===============================
+        async function adminApi(path, method = "GET", body = null) {
+            const headers = {
+                "Content-Type": "application/json"
+            };
+            if (adminToken) {
+                headers["Authorization"] = "Bearer " + adminToken;
+            }
+
+            const opt = { method, headers };
+            if (body) opt.body = JSON.stringify(body);
+
+            const res = await fetch(path, opt);
+            let data = null;
+            try {
+                data = await res.json();
+            } catch (e) {}
+            return { status: res.status, ok: res.ok, data };
+        }
+
+        // ===============================
+        // Admin Auth
+        // ===============================
+        async function adminLogin() {
+            const pwd = $("admin-password").value;
+            showAdminMsg("admin-auth-message", "");
+
+            if (!pwd) {
+                showAdminMsg("admin-auth-message", "請輸入後台密碼");
+                return;
+            }
+
+            try {
+                const res = await adminApi("/admin/login", "POST", { password: pwd });
+                if (!res.ok || !res.data || !res.data.success) {
+                    const msg = (res.data && res.data.detail) || "登入失敗";
+                    showAdminMsg("admin-auth-message", msg);
+                    return;
+                }
+
+                adminToken = res.data.admin_token;
+                $("admin-password").value = "";
+                setText("admin-status", "已登入");
+                adminShowPage("page-admin-dashboard");
+                adminOpenSection("players");
+                showAdminMsg("admin-auth-message", "", false);
+            } catch (e) {
+                console.error(e);
+                showAdminMsg("admin-auth-message", "無法連線伺服器");
+            }
+        }
+
+        function adminLogout() {
+            adminToken = null;
+            setText("admin-status", "未登入");
+            adminShowPage("page-admin-auth");
+        }
+
+        // ===============================
+        // 玩家管理
+        // ===============================
+        async function loadPlayers() {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const tableDiv = $("admin-players-table");
+            tableDiv.innerHTML = "載入中...";
+
+            try {
+                const res = await adminApi("/admin/players", "GET");
+                if (!res.ok || !res.data || !res.data.success) {
+                    tableDiv.textContent = (res.data && res.data.detail) || "載入玩家列表失敗";
+                    return;
+                }
+
+                const players = res.data.players || [];
+                if (!players.length) {
+                    tableDiv.textContent = "目前沒有玩家";
+                    return;
+                }
+
+                let html = `<table style="width:100%; border-collapse:collapse;">`;
+                html += `
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(0,255,255,0.3);">
+                            <th style="padding:4px;">帳號</th>
+                            <th style="padding:4px;">金幣</th>
+                            <th style="padding:4px;">等級</th>
+                            <th style="padding:4px;">EXP</th>
+                            <th style="padding:4px;">在線</th>
+                            <th style="padding:4px;">建立時間</th>
+                            <th style="padding:4px;">最後登入</th>
+                            <th style="padding:4px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+
+                for (const p of players) {
+                    html += `
+                        <tr style="border-bottom:1px solid rgba(0,255,255,0.08);">
+                            <td style="padding:4px;">${p.username}</td>
+                            <td style="padding:4px;">${p.gold}</td>
+                            <td style="padding:4px;">${p.level}</td>
+                            <td style="padding:4px;">${p.exp}</td>
+                            <td style="padding:4px; color:${p.online ? "#9fffb2" : "#ff99bb"};">
+                                ${p.online ? "在線" : "離線"}
+                            </td>
+                            <td style="padding:4px;">${p.created_at || "-"}</td>
+                            <td style="padding:4px;">${p.last_login_at || "-"}</td>
+                            <td style="padding:4px; min-width:180px;">
+                                <button class="cyber-btn" onclick="promptAdjustGold('${p.username}')">金幣調整</button>
+                                <button class="cyber-btn" onclick="promptAdjustInventory('${p.username}')">背包調整</button>
+                                <button class="cyber-btn danger-btn" onclick="toggleBanUser('${p.username}')">封禁/解禁</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                html += `</tbody></table>`;
+                tableDiv.innerHTML = html;
+
+            } catch (e) {
+                console.error(e);
+                tableDiv.textContent = "載入玩家列表失敗（連線錯誤）";
+            }
+        }
+
+        async function loadOnlinePlayers() {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const el = $("admin-online-list");
+            el.textContent = "載入中...";
+
+            try {
+                const res = await adminApi("/admin/online", "GET");
+                if (!res.ok || !res.data || !res.data.success) {
+                    el.textContent = (res.data && res.data.detail) || "無法取得在線玩家";
+                    return;
+                }
+                const list = res.data.online_players || [];
+                el.textContent = "在線玩家：" + (list.length ? list.join("、") : "（無）");
+            } catch (e) {
+                console.error(e);
+                el.textContent = "無法取得在線玩家";
+            }
+        }
+
+        function promptAdjustGold(username) {
+            const v = prompt(`對玩家 ${username} 調整金幣，輸入「增減值」，可正可負：`, "100");
+            if (v === null) return;
+            const amount = parseInt(v, 10);
+            if (isNaN(amount)) {
+                alert("請輸入數字");
+                return;
+            }
+            adjustGold(username, amount);
+        }
+
+        async function adjustGold(username, amount) {
+            try {
+                const res = await adminApi(`/admin/gold/${encodeURIComponent(username)}?amount=${amount}`, "POST");
+                if (!res.ok || !res.data || !res.data.success) {
+                    alert((res.data && res.data.detail) || "調整金幣失敗");
+                    return;
+                }
+                alert(`已調整金幣，新金幣：${res.data.gold_after}`);
+                loadPlayers();
+            } catch (e) {
+                console.error(e);
+                alert("調整金幣失敗（連線錯誤）");
+            }
+        }
+
+        function promptAdjustInventory(username) {
+            const itemId = prompt(`對玩家 ${username} 調整背包：輸入 item_id：`, "potion_small");
+            if (itemId === null || !itemId) return;
+            const v = prompt(`輸入欲調整數量（可正可負）：`, "1");
+            if (v === null) return;
+            const qty = parseInt(v, 10);
+            if (isNaN(qty)) {
+                alert("請輸入數字");
+                return;
+            }
+            adjustInventory(username, itemId, qty);
+        }
+
+        async function adjustInventory(username, itemId, qty) {
+            try {
+                const res = await adminApi(`/admin/inventory/${encodeURIComponent(username)}/${encodeURIComponent(itemId)}?qty=${qty}`, "POST");
+                if (!res.ok || !res.data || !res.data.success) {
+                    alert((res.data && res.data.detail) || "調整背包失敗");
+                    return;
+                }
+                alert(`已調整背包，${itemId} 新數量：${res.data.new_qty}`);
+            } catch (e) {
+                console.error(e);
+                alert("調整背包失敗（連線錯誤）");
+            }
+        }
+
+        async function toggleBanUser(username) {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const action = prompt(`對玩家 ${username} 執行動作：\n輸入 1 封禁，輸入 2 解禁`, "1");
+            if (action === null) return;
+
+            if (action === "1") {
+                // ban
+                try {
+                    const res = await adminApi(`/admin/ban/${encodeURIComponent(username)}`, "POST");
+                    if (!res.ok || !res.data || !res.data.success) {
+                        alert((res.data && res.data.detail) || "封禁失敗");
+                        return;
+                    }
+                    alert(res.data.message || "已封禁");
+                    loadPlayers();
+                } catch (e) {
+                    console.error(e);
+                    alert("封禁失敗（連線錯誤）");
+                }
+            } else if (action === "2") {
+                // unban
+                try {
+                    const res = await adminApi(`/admin/unban/${encodeURIComponent(username)}`, "POST");
+                    if (!res.ok || !res.data || !res.data.success) {
+                        alert((res.data && res.data.detail) || "解禁失敗");
+                        return;
+                    }
+                    alert(res.data.message || "已解除封禁");
+                    loadPlayers();
+                } catch (e) {
+                    console.error(e);
+                    alert("解禁失敗（連線錯誤）");
+                }
+            }
+        }
+
+        // ===============================
+        // 拍賣管理
+        // ===============================
+        async function loadAllAuctions() {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const div = $("admin-auctions-table");
+            div.innerHTML = "載入中...";
+
+            try {
+                const res = await adminApi("/admin/auctions", "GET");
+                if (!res.ok || !res.data || !res.data.success) {
+                    div.textContent = (res.data && res.data.detail) || "載入拍賣列表失敗";
+                    return;
+                }
+                const list = res.data.auctions || [];
+                if (!list.length) {
+                    div.textContent = "目前沒有任何拍賣紀錄";
+                    return;
+                }
+
+                let html = `<table style="width:100%; border-collapse:collapse;">`;
+                html += `
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(0,255,255,0.3);">
+                            <th style="padding:4px;">ID</th>
+                            <th style="padding:4px;">賣家</th>
+                            <th style="padding:4px;">物品</th>
+                            <th style="padding:4px;">數量</th>
+                            <th style="padding:4px;">起標價</th>
+                            <th style="padding:4px;">目前價</th>
+                            <th style="padding:4px;">直購價</th>
+                            <th style="padding:4px;">狀態</th>
+                            <th style="padding:4px;">建立時間</th>
+                            <th style="padding:4px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+
+                for (const a of list) {
+                    const buyoutText = a.buyout_price && a.buyout_price > 0 ? a.buyout_price : "-";
+                    html += `
+                        <tr style="border-bottom:1px solid rgba(0,255,255,0.08);">
+                            <td style="padding:4px;">${a.auction_id}</td>
+                            <td style="padding:4px;">${a.seller}</td>
+                            <td style="padding:4px;">${a.item_id}</td>
+                            <td style="padding:4px;">${a.qty}</td>
+                            <td style="padding:4px;">${a.start_price}</td>
+                            <td style="padding:4px;">${a.current_price} (${a.current_bidder || "-"})</td>
+                            <td style="padding:4px;">${buyoutText}</td>
+                            <td style="padding:4px;">${a.status}</td>
+                            <td style="padding:4px;">${a.created_at || "-"}</td>
+                            <td style="padding:4px;">
+                                <button class="cyber-btn danger-btn" onclick="adminDeleteAuction(${a.auction_id})">刪除</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                html += `</tbody></table>`;
+                div.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+                div.textContent = "載入拍賣列表失敗（連線錯誤）";
+            }
+        }
+
+        async function adminDeleteAuction(auctionId) {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const sure = confirm(`確定要刪除拍賣 #${auctionId} 嗎？\n物品將退回賣家背包。`);
+            if (!sure) return;
+
+            try {
+                const res = await adminApi(`/admin/auction/${auctionId}`, "DELETE");
+                if (!res.ok || !res.data || !res.data.success) {
+                    alert((res.data && res.data.detail) || "刪除拍賣失敗");
+                    return;
+                }
+                alert(res.data.message || "已刪除拍賣");
+                loadAllAuctions();
+            } catch (e) {
+                console.error(e);
+                alert("刪除拍賣失敗（連線錯誤）");
+            }
+        }
+
+        // ===============================
+        // 紀錄（actions / bids / sold）
+        // ===============================
+        async function loadActionLogs() {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const area = $("admin-logs-area");
+            area.textContent = "載入中...";
+
+            try {
+                const res = await adminApi("/admin/logs?limit=100", "GET");
+                if (!res.ok || !res.data || !res.data.success) {
+                    area.textContent = (res.data && res.data.detail) || "載入行為紀錄失敗";
+                    return;
+                }
+                const logs = res.data.actions || [];
+                if (!logs.length) {
+                    area.textContent = "沒有行為紀錄";
+                    return;
+                }
+
+                let text = "[Actions]\n";
+                for (const row of logs) {
+                    text += JSON.stringify(row) + "\n";
+                }
+                area.textContent = text;
+            } catch (e) {
+                console.error(e);
+                area.textContent = "載入行為紀錄失敗（連線錯誤）";
+            }
+        }
+
+        async function loadBidLogs() {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const area = $("admin-logs-area");
+            area.textContent = "載入中...";
+
+            try {
+                const res = await adminApi("/admin/bids?limit=100", "GET");
+                if (!res.ok || !res.data || !res.data.success) {
+                    area.textContent = (res.data && res.data.detail) || "載入出價紀錄失敗";
+                    return;
+                }
+                const logs = res.data.bids || [];
+                if (!logs.length) {
+                    area.textContent = "沒有出價紀錄";
+                    return;
+                }
+
+                let text = "[Bids]\n";
+                for (const row of logs) {
+                    text += JSON.stringify(row) + "\n";
+                }
+                area.textContent = text;
+            } catch (e) {
+                console.error(e);
+                area.textContent = "載入出價紀錄失敗（連線錯誤）";
+            }
+        }
+
+        async function loadSoldLogs() {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const area = $("admin-logs-area");
+            area.textContent = "載入中...";
+
+            try {
+                const res = await adminApi("/admin/sold?limit=100", "GET");
+                if (!res.ok || !res.data || !res.data.success) {
+                    area.textContent = (res.data && res.data.detail) || "載入成交紀錄失敗";
+                    return;
+                }
+                const logs = res.data.sold || [];
+                if (!logs.length) {
+                    area.textContent = "沒有成交紀錄";
+                    return;
+                }
+
+                let text = "[Sold]\n";
+                for (const row of logs) {
+                    text += JSON.stringify(row) + "\n";
+                }
+                area.textContent = text;
+            } catch (e) {
+                console.error(e);
+                area.textContent = "載入成交紀錄失敗（連線錯誤）";
+            }
+        }
+
+        // ===============================
+        // 公告管理
+        // ===============================
+        async function addAnnouncement() {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const msg = $("announce-input").value.trim();
+            if (!msg) {
+                showAdminMsg("admin-announce-msg", "請輸入公告內容");
+                return;
+            }
+
+            try {
+                const res = await adminApi(`/admin/announce?msg=${encodeURIComponent(msg)}`, "POST");
+                if (!res.ok || !res.data || !res.data.success) {
+                    showAdminMsg("admin-announce-msg",
+                        (res.data && (res.data.message || res.data.detail)) || "新增公告失敗");
+                    return;
+                }
+                $("announce-input").value = "";
+                showAdminMsg("admin-announce-msg", "公告已新增", false);
+                loadAnnouncements();
+            } catch (e) {
+                console.error(e);
+                showAdminMsg("admin-announce-msg", "新增公告失敗（連線錯誤）");
+            }
+        }
+
+        async function loadAnnouncements() {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const div = $("admin-announce-list");
+            div.textContent = "載入中...";
+
+            try {
+                const res = await adminApi("/admin/announce", "GET");
+                if (!res.ok || !res.data || !res.data.success) {
+                    div.textContent = (res.data && res.data.detail) || "載入公告失敗";
+                    return;
+                }
+                const list = res.data.announcements || [];
+                if (!list.length) {
+                    div.textContent = "目前沒有公告";
+                    return;
+                }
+
+                let html = "<ul style='list-style:none; padding-left:0;'>";
+                list.forEach((msg, idx) => {
+                    html += `
+                        <li style="margin-bottom:6px;">
+                            <span style="font-size:12px; color:#9ff5ff;">[${idx}]</span>
+                            <span style="font-size:12px; margin-left:6px;">${msg}</span>
+                            <button class="cyber-btn danger-btn" style="margin-left:8px; padding:2px 8px; font-size:11px;"
+                                onclick="deleteAnnouncement(${idx})">
+                                刪除
+                            </button>
+                        </li>
+                    `;
+                });
+                html += "</ul>";
+                div.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+                div.textContent = "載入公告失敗（連線錯誤）";
+            }
+        }
+
+        async function deleteAnnouncement(idx) {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const sure = confirm(`確定刪除第 ${idx} 筆公告？`);
+            if (!sure) return;
+
+            try {
+                const res = await adminApi(`/admin/announce/${idx}`, "DELETE");
+                if (!res.ok || !res.data || !res.data.success) {
+                    alert((res.data && res.data.detail) || "刪除公告失敗");
+                    return;
+                }
+                alert(res.data.message || "公告已刪除");
+                loadAnnouncements();
+            } catch (e) {
+                console.error(e);
+                alert("刪除公告失敗（連線錯誤）");
+            }
+        }
+
+        async function clearAnnouncements() {
+            if (!adminToken) {
+                alert("請先登入 Admin");
+                return;
+            }
+            const sure = confirm("確定要清除所有公告？");
+            if (!sure) return;
+
+            try {
+                const res = await adminApi("/admin/announce", "DELETE");
+                if (!res.ok || !res.data || !res.data.success) {
+                    alert((res.data && res.data.detail) || "清除公告失敗");
+                    return;
+                }
+                alert(res.data.message || "公告已全部清除");
+                loadAnnouncements();
+            } catch (e) {
+                console.error(e);
+                alert("清除公告失敗（連線錯誤）");
+            }
+        }
+
+        // ===============================
+        // Init
+        // ===============================
+        window.addEventListener("DOMContentLoaded", () => {
+            adminShowPage("page-admin-auth");
+        });
+    </script>
+
 </body>
 </html>
