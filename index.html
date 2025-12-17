@@ -1,167 +1,347 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8" />
-    <title>Cyberpunk Game UI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Cyberpunk MMORPG</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <!-- Ambient -->
+  <div class="bg">
+    <div class="bg-noise"></div>
+    <div class="bg-fog"></div>
+    <div class="bg-grid"></div>
+  </div>
 
-    <!-- ===================== -->
-    <!-- Cyberpunk Title Bar   -->
-    <!-- ===================== -->
-    <header class="cyber-header">
-        <div class="title">CYBERPUNK GAME SYSTEM</div>
-        <div class="subtitle">Redis Powered Multiplayer Backend</div>
-    </header>
+  <!-- Login Screen (1A + 4B) -->
+  <section id="screen-login" class="screen screen--active">
+    <div class="login-wrap">
+      <img class="brand-line" src="assets/glow.svg" alt="glow"/>
+      <h1 class="brand-title">CYBERPUNK MMORPG</h1>
+      <p class="brand-sub">Neon Protocol Online</p>
 
-
-    <!-- ===================== -->
-    <!-- Login / Register Page -->
-    <!-- ===================== -->
-    <section id="page-auth" class="page active">
-
-        <div class="auth-container neon-panel">
-
-            <h2 class="cyber-title">玩家登入 / 註冊</h2>
-
-            <div class="input-group">
-                <label>使用者名稱（可中文）</label>
-                <input id="auth-username" type="text" />
-            </div>
-
-            <div class="input-group">
-                <label>密碼</label>
-                <input id="auth-password" type="password" />
-            </div>
-
-            <div class="input-group">
-                <label>確認密碼（註冊用）</label>
-                <input id="auth-password2" type="password" />
-            </div>
-
-            <div class="btn-row">
-                <button class="cyber-btn" onclick="registerUser()">註冊</button>
-                <button class="cyber-btn" onclick="loginUser()">登入</button>
-            </div>
-
-            <div id="auth-message" class="message"></div>
+      <div class="card card--glass">
+        <div class="tabs-mini">
+          <button class="tabs-mini__btn tabs-mini__btn--active" data-mini="login">登入</button>
+          <button class="tabs-mini__btn" data-mini="register">註冊</button>
         </div>
-    </section>
 
+        <form id="form-login" class="form form--active" data-enter-submit>
+          <label class="field">
+            <span>帳號</span>
+            <input id="login-username" autocomplete="username" placeholder="輸入帳號"/>
+          </label>
+          <label class="field">
+            <span>密碼</span>
+            <input id="login-password" type="password" autocomplete="current-password" placeholder="輸入密碼"/>
+          </label>
+          <button class="btn btn--primary" type="button" id="btn-login">登入</button>
+          <div class="hint" id="login-msg"></div>
+        </form>
 
+        <form id="form-register" class="form" data-enter-submit>
+          <label class="field">
+            <span>帳號</span>
+            <input id="reg-username" autocomplete="username" placeholder="建立帳號"/>
+          </label>
+          <label class="field">
+            <span>密碼</span>
+            <input id="reg-password" type="password" autocomplete="new-password" placeholder="建立密碼"/>
+          </label>
+          <label class="field">
+            <span>確認密碼</span>
+            <input id="reg-password2" type="password" autocomplete="new-password" placeholder="再次輸入密碼"/>
+          </label>
+          <button class="btn btn--primary" type="button" id="btn-register">註冊</button>
+          <div class="hint" id="register-msg"></div>
+        </form>
+      </div>
 
-    <!-- ===================== -->
-    <!-- Player Dashboard Page -->
-    <!-- ===================== -->
-    <section id="page-dashboard" class="page">
-
-        <div class="dash-container">
-
-            <!-- 左側資訊欄 -->
-            <aside class="sidebar neon-panel">
-
-                <h2 class="cyber-title">玩家資訊</h2>
-
-                <div class="info-row">
-                    <label>使用者：</label>
-                    <span id="player-username">-</span>
-                </div>
-
-                <div class="info-row">
-                    <label>金幣：</label>
-                    <span id="player-gold">0</span>
-                </div>
-
-                <div class="info-row">
-                    <label>等級：</label>
-                    <span id="player-level">1</span>
-                </div>
-
-                <div class="info-row">
-                    <label>經驗：</label>
-                    <span id="player-exp">0</span>
-                </div>
-
-                <button class="cyber-btn wide-btn" onclick="openSection('click')">點擊賺金幣</button>
-                <button class="cyber-btn wide-btn" onclick="openSection('shop')">商店</button>
-                <button class="cyber-btn wide-btn" onclick="openSection('inventory')">背包</button>
-                <button class="cyber-btn wide-btn" onclick="openSection('auction')">拍賣場</button>
-
-                <button class="cyber-btn danger-btn wide-btn" onclick="logoutUser()">登出</button>
-            </aside>
-
-
-
-            <!-- 主內容區 -->
-            <main class="main-panel">
-
-                <!-- 點擊賺金幣 -->
-                <div id="section-click" class="panel-section active neon-panel">
-                    <h2 class="cyber-title">點擊賺金幣</h2>
-                    <button id="click-btn" class="click-btn" onclick="clickGold()">點我</button>
-
-                    <div class="info-area">
-                        <p>Combo：<span id="combo-value">1</span></p>
-                        <p>Critical：<span id="critical-value">-</span></p>
-                        <p>總點擊：<span id="total-clicks-value">0</span></p>
-                    </div>
-                </div>
-
-
-
-                <!-- 商店 -->
-                <div id="section-shop" class="panel-section neon-panel">
-                    <h2 class="cyber-title">商店</h2>
-
-                    <div id="shop-items" class="list-grid"></div>
-                </div>
-
-
-
-                <!-- 背包 -->
-                <div id="section-inventory" class="panel-section neon-panel">
-                    <h2 class="cyber-title">背包</h2>
-
-                    <div id="inventory-items" class="list-grid"></div>
-                </div>
-
-
-
-                <!-- 拍賣場 -->
-                <div id="section-auction" class="panel-section neon-panel">
-                    <h2 class="cyber-title">拍賣場</h2>
-
-                    <div class="btn-row">
-                        <button class="cyber-btn" onclick="loadAuctionList()">刷新列表</button>
-                        <button class="cyber-btn" onclick="openAuctionCreate()">上架物品</button>
-                    </div>
-
-                    <div id="auction-list" class="list-grid"></div>
-                </div>
-
-            </main>
-        </div>
-    </section>
-
-
-
-
-    <!-- ===================== -->
-    <!-- Modal （上架拍賣 / 購買等） -->
-    <!-- ===================== -->
-    <div id="modal" class="modal">
-        <div class="modal-content neon-panel">
-            <span class="modal-close" onclick="closeModal()">✕</span>
-            <div id="modal-body">內容載入中...</div>
-        </div>
+      <div class="meta-row">
+        <span class="meta-pill">Enter 可送出</span>
+        <span class="meta-pill">單裝置登入</span>
+        <span class="meta-pill">錯誤上限鎖定</span>
+      </div>
     </div>
 
+    <!-- Transition overlay -->
+    <div id="login-transition" class="transition">
+      <div class="transition__scan"></div>
+      <div class="transition__text">CONNECTING…</div>
+    </div>
+  </section>
 
-    <!-- JS -->
-    <script src="app.js"></script>
+  <!-- Game Screen (2C mobile full-screen tabs) -->
+  <section id="screen-game" class="screen">
+    <header class="topbar">
+      <div class="topbar__left">
+        <div class="avatar"></div>
+        <div class="who">
+          <div class="who__name" id="who-name">—</div>
+          <div class="who__sub">
+            <span id="who-level">LV—</span>
+            <span class="dot">•</span>
+            <span id="who-power">Power —</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar__right">
+        <div class="currency">
+          <span class="currency__label">G</span>
+          <span class="currency__val" id="who-gold">—</span>
+        </div>
+        <button class="btn btn--ghost" id="btn-refresh">刷新</button>
+        <button class="btn btn--ghost" id="btn-logout">登出</button>
+      </div>
+    </header>
 
+    <main class="pages">
+      <!-- Profile -->
+      <article class="page page--active" id="page-profile">
+        <div class="page-head">
+          <h2>角色面板</h2>
+          <img class="divider" src="assets/neon-line.svg" alt="divider"/>
+        </div>
+
+        <div class="grid">
+          <div class="card card--glass">
+            <h3>最終屬性</h3>
+            <pre class="pre" id="stats-json">—</pre>
+          </div>
+          <div class="card card--glass">
+            <h3>升級 / EXP</h3>
+            <div class="row">
+              <div class="kv"><div class="k">等級</div><div class="v" id="p-level">—</div></div>
+              <div class="kv"><div class="k">EXP</div><div class="v" id="p-exp">—</div></div>
+            </div>
+            <div class="bar">
+              <div class="bar__fill" id="exp-bar"></div>
+            </div>
+            <div class="row row--tight">
+              <label class="field field--inline">
+                <span>測試加 EXP</span>
+                <input id="exp-add" inputmode="numeric" placeholder="例如 50"/>
+              </label>
+              <button class="btn btn--primary" id="btn-exp-add">送出</button>
+            </div>
+            <div class="hint" id="exp-msg"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Equip -->
+      <article class="page" id="page-equip">
+        <div class="page-head">
+          <h2>裝備與強化</h2>
+          <img class="divider" src="assets/neon-line.svg" alt="divider"/>
+        </div>
+
+        <div class="grid">
+          <div class="card card--glass">
+            <h3>裝備欄</h3>
+            <div class="slots" id="equip-slots"></div>
+            <div class="hint">點選背包中的裝備可穿戴；穿戴後可強化。</div>
+          </div>
+          <div class="card card--glass">
+            <h3>背包 / 裝備列表</h3>
+            <div class="toolbar">
+              <input id="equip-search" placeholder="搜尋 UID / 稀有度 / 部位"/>
+              <button class="btn btn--ghost" id="btn-equip-refresh">刷新</button>
+              <button class="btn btn--ghost" id="btn-equip-drop">測試掉落</button>
+            </div>
+            <div class="list" id="equip-list"></div>
+          </div>
+          <div class="card card--glass">
+            <h3>強化面板</h3>
+            <div class="row row--tight">
+              <div class="kv"><div class="k">選中 UID</div><div class="v mono" id="enh-uid">—</div></div>
+              <div class="kv"><div class="k">強化</div><div class="v" id="enh-level">—</div></div>
+            </div>
+            <label class="check">
+              <input id="enh-guard" type="checkbox"/>
+              <span>使用保護券（+16～20 有效）</span>
+            </label>
+            <button class="btn btn--primary" id="btn-enhance">強化</button>
+            <div class="hint" id="enh-msg"></div>
+            <div class="fx" id="enh-fx"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Battle -->
+      <article class="page" id="page-battle">
+        <div class="page-head">
+          <h2>PVP 自動戰鬥</h2>
+          <img class="divider" src="assets/neon-line.svg" alt="divider"/>
+        </div>
+
+        <div class="grid">
+          <div class="card card--glass">
+            <h3>找對手</h3>
+            <div class="row row--tight">
+              <label class="field field--inline">
+                <span>對手帳號</span>
+                <input id="battle-target" placeholder="輸入玩家帳號"/>
+              </label>
+              <button class="btn btn--primary" id="btn-battle">開戰</button>
+            </div>
+            <div class="hint" id="battle-msg"></div>
+          </div>
+
+          <div class="card card--glass">
+            <h3>戰鬥播放</h3>
+            <div class="battleboard">
+              <div class="fighter">
+                <div class="fighter__name" id="bf-me">YOU</div>
+                <div class="hp"><div class="hp__fill" id="hp-me"></div></div>
+              </div>
+              <div class="vs">VS</div>
+              <div class="fighter">
+                <div class="fighter__name" id="bf-foe">FOE</div>
+                <div class="hp"><div class="hp__fill" id="hp-foe"></div></div>
+              </div>
+            </div>
+            <div class="log" id="battle-log"></div>
+          </div>
+
+          <div class="card card--glass">
+            <h3>排行榜</h3>
+            <div class="toolbar">
+              <button class="btn btn--ghost" id="btn-rank-power">戰力</button>
+              <button class="btn btn--ghost" id="btn-rank-elo">ELO</button>
+              <button class="btn btn--ghost" id="btn-rank-weekly">本週</button>
+            </div>
+            <div class="list" id="rank-list"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Shop -->
+      <article class="page" id="page-shop">
+        <div class="page-head">
+          <h2>商店</h2>
+          <img class="divider" src="assets/neon-line.svg" alt="divider"/>
+        </div>
+
+        <div class="grid">
+          <div class="card card--glass">
+            <h3>商品列表</h3>
+            <div class="list" id="shop-list"></div>
+          </div>
+          <div class="card card--glass">
+            <h3>我的道具</h3>
+            <div class="list" id="inv-list"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Auction -->
+      <article class="page" id="page-auction">
+        <div class="page-head">
+          <h2>拍賣行</h2>
+          <img class="divider" src="assets/neon-line.svg" alt="divider"/>
+        </div>
+
+        <div class="grid">
+          <div class="card card--glass">
+            <h3>拍賣列表</h3>
+            <div class="toolbar">
+              <button class="btn btn--ghost" id="btn-auction-refresh">刷新</button>
+            </div>
+            <div class="list" id="auction-list"></div>
+          </div>
+          <div class="card card--glass">
+            <h3>上架拍賣</h3>
+            <div class="row row--tight">
+              <label class="field field--inline">
+                <span>類型</span>
+                <select id="auc-type">
+                  <option value="item">物品</option>
+                  <option value="equip">裝備</option>
+                </select>
+              </label>
+              <label class="field field--inline">
+                <span>item_id（物品）</span>
+                <input id="auc-item-id" placeholder="例如 refine_stone"/>
+              </label>
+            </div>
+            <div class="row row--tight">
+              <label class="field field--inline">
+                <span>uid（裝備）</span>
+                <input id="auc-uid" placeholder="裝備 UID"/>
+              </label>
+              <label class="field field--inline">
+                <span>數量</span>
+                <input id="auc-qty" inputmode="numeric" placeholder="1"/>
+              </label>
+            </div>
+            <div class="row row--tight">
+              <label class="field field--inline">
+                <span>起標價</span>
+                <input id="auc-start" inputmode="numeric" placeholder="100"/>
+              </label>
+              <label class="field field--inline">
+                <span>直購價（可空）</span>
+                <input id="auc-buyout" inputmode="numeric" placeholder="500"/>
+              </label>
+            </div>
+            <button class="btn btn--primary" id="btn-auction-create">上架</button>
+            <div class="hint" id="auction-msg"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Friends -->
+      <article class="page" id="page-friends">
+        <div class="page-head">
+          <h2>好友</h2>
+          <img class="divider" src="assets/neon-line.svg" alt="divider"/>
+        </div>
+
+        <div class="grid">
+          <div class="card card--glass">
+            <h3>新增好友</h3>
+            <div class="row row--tight">
+              <label class="field field--inline">
+                <span>玩家帳號</span>
+                <input id="friend-target" placeholder="輸入對方帳號"/>
+              </label>
+              <button class="btn btn--primary" id="btn-friend-request">送出</button>
+            </div>
+            <div class="hint" id="friend-msg"></div>
+          </div>
+
+          <div class="card card--glass">
+            <h3>好友申請</h3>
+            <div class="list" id="friend-req-list"></div>
+          </div>
+
+          <div class="card card--glass">
+            <h3>好友列表（含戰力）</h3>
+            <div class="toolbar">
+              <button class="btn btn--ghost" id="btn-friend-refresh">刷新</button>
+            </div>
+            <div class="list" id="friend-list"></div>
+          </div>
+        </div>
+      </article>
+    </main>
+
+    <!-- Bottom nav (2C) -->
+    <nav class="bnav">
+      <button class="bnav__btn bnav__btn--active" data-page="profile">角色</button>
+      <button class="bnav__btn" data-page="equip">裝備</button>
+      <button class="bnav__btn" data-page="battle">戰鬥</button>
+      <button class="bnav__btn" data-page="shop">商店</button>
+      <button class="bnav__btn" data-page="auction">拍賣</button>
+      <button class="bnav__btn" data-page="friends">好友</button>
+    </nav>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+  </section>
+
+  <script src="app.js"></script>
 </body>
 </html>
